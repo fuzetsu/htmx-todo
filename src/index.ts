@@ -25,7 +25,9 @@ const app = new Elysia()
     })
   )
   .get(HTMX_PUBLIC_PATH, () => Bun.file('./node_modules/htmx.org/dist/htmx.min.js'))
-  .get('/', () => Todos({ db }))
+  .get('/', () => Todos({ db, currentFilter: 'All' }))
+  .get('/active', () => Todos({ db, currentFilter: 'Active' }))
+  .get('/done', () => Todos({ db, currentFilter: 'Done' }))
   .post('/toggle-todo/:id', ({ params }) => {
     const id = Number(params.id)
     toggleTodo.get(id)
@@ -33,8 +35,12 @@ const app = new Elysia()
     if (!todo) throw new Error('could not find todo')
     return Todo({ todo })
   })
-  .post(
-    '/new-todo',
+  .delete('/todo/:id', ({ params }) => {
+    db.query<unknown, number>(`DELETE FROM todos WHERE id = ?1`).get(Number(params.id))
+    return null
+  })
+  .put(
+    '/todo',
     ({ body }) => {
       // insert todo
       db.query<unknown, string>(`INSERT INTO todos (text, done) VALUES (?1, 0);`).run(body.text)
