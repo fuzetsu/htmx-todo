@@ -1,5 +1,3 @@
-export interface TodoData {
-  id: string
-  text: string
-  done: number
-}
+export const filters = ['all', 'active', 'done'] as const
+
+export type Filter = (typeof filters)[number]

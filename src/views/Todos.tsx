@@ -1,14 +1,14 @@
 import { Root } from './cmp/Root'
 import { Input } from './cmp/Input'
-import Database from 'bun:sqlite'
-import { TodoData } from '../types'
+import { Todo } from '../db/schema'
+import { Filter, filters } from '../types'
 
 interface Props {
-  db: Database
-  currentFilter: 'All' | 'Active' | 'Done'
+  todos: Todo[]
+  currentFilter: Filter
 }
 
-export function Todo({ todo }: { todo: TodoData }) {
+export function Todo({ todo }: { todo: Todo }) {
   const htmlId = `todo-${todo.id}`
   const idSel = `#${htmlId}`
   return (
@@ -20,8 +20,8 @@ export function Todo({ todo }: { todo: TodoData }) {
         <input
           autocomplete="off"
           type="checkbox"
-          checked={!!todo.done}
-          hx-post={`/toggle-todo/${todo.id}`}
+          checked={todo.done}
+          hx-post={`/todo/${todo.id}/toggle`}
           hx-target={idSel}
           hx-swap="outerHTML transition:true"
         />
@@ -30,7 +30,7 @@ export function Todo({ todo }: { todo: TodoData }) {
         </span>
       </div>
       <button
-        class="hover:text-red-700"
+        class="hover:text-red-700 dark:hover:text-red-400"
         hx-delete={`/todo/${todo.id}`}
         hx-swap="outerHTML transition:true"
         hx-target={idSel}
@@ -41,23 +41,10 @@ export function Todo({ todo }: { todo: TodoData }) {
   )
 }
 
-export function Todos({ db, currentFilter }: Props) {
-  const todos = db.query<TodoData, []>('SELECT * from TODOS ORDER BY id DESC').all()
-
-  const filters = [
-    { href: '/', label: 'All' },
-    { href: '/active', label: 'Active' },
-    { href: '/done', label: 'Done' },
-  ]
-
-  const filteredTodos =
-    currentFilter === 'All'
-      ? todos
-      : todos.filter((todo) => (currentFilter === 'Active' ? !todo.done : todo.done))
-
+export function Todos({ todos, currentFilter }: Props) {
   return (
     <Root>
-      <div class="m-2 max-w-[500px] mx-auto flex flex-col gap-1">
+      <div class="m-2 max-w-[500px] mx-auto flex flex-col gap-2">
         <h1 class="text-3xl">Todo app</h1>
 
         <form
@@ -66,26 +53,41 @@ export function Todos({ db, currentFilter }: Props) {
           hx-target="#todo-list"
           hx-on--after-request="event.detail.successful && this.reset()"
         >
-          <Input name="text" class="w-full" placeholder="e.g. Wash dishes" />
+          <Input id="newTodo" name="text" class="w-full" placeholder="e.g. Wash dishes" />
         </form>
+
         <div class="flex flex-row gap-2 justify-center" hx-boost="true">
           {filters.map((filter) =>
-            filter.label === currentFilter ? (
-              filter.label
+            filter === currentFilter ? (
+              filter
             ) : (
-              <a href={filter.href} hx-swap="innerHTML transition:true" class={'text-blue-800'}>
-                {filter.label}
+              <a
+                href={filter === 'all' ? '/' : `/${filter}`}
+                hx-swap="innerHTML transition:true"
+                class={'text-blue-800 dark:text-blue-500 hover:underline'}
+              >
+                {filter}
               </a>
             )
           )}
         </div>
-        <div id="todo-list" class="flex flex-col gap-1">
-          {filteredTodos.map((todo) => (
+
+        <div id="todo-list" class="flex flex-col gap-2">
+          {todos.map((todo) => (
             <Todo todo={todo} />
           ))}
         </div>
-        {/* @TODO dynamically update when todo added/removed */}
-        <p class="text-center text-slate-600">{filteredTodos.length} todos</p>
+
+        <p class="text-center text-slate-600 dark:text-slate-300">
+          <span
+            hx-trigger="htmx:beforeSwap from:#todo-list delay:20ms"
+            hx-get={`/todo-count/${currentFilter}`}
+            hx-swap="innerHTML transition:true"
+          >
+            {todos.length}
+          </span>{' '}
+          {currentFilter !== 'all' && currentFilter} todos
+        </p>
       </div>
     </Root>
   )
