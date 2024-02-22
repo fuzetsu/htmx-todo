@@ -21,7 +21,7 @@ export function Todo({ todo }: { todo: Todo }) {
           autocomplete="off"
           type="checkbox"
           checked={todo.done}
-          hx-post={`/todo/${todo.id}/toggle`}
+          hx-post={`/todos/${todo.id}/toggle`}
           hx-target={idSel}
           hx-swap="outerHTML transition:true"
         />
@@ -31,7 +31,7 @@ export function Todo({ todo }: { todo: Todo }) {
       </div>
       <button
         class="hover:text-red-700 dark:hover:text-red-400"
-        hx-delete={`/todo/${todo.id}`}
+        hx-delete={`/todos/${todo.id}`}
         hx-swap="outerHTML transition:true"
         hx-target={idSel}
       >
@@ -48,7 +48,7 @@ export function Todos({ todos, currentFilter }: Props) {
         <h1 class="text-3xl">Todo app</h1>
 
         <form
-          hx-put="/todo"
+          hx-put="/todos"
           hx-swap="afterbegin transition:true"
           hx-target="#todo-list"
           hx-on--after-request="event.detail.successful && this.reset()"
@@ -62,9 +62,9 @@ export function Todos({ todos, currentFilter }: Props) {
               filter
             ) : (
               <a
-                href={filter === 'all' ? '/' : `/${filter}`}
+                href={`/todos/${filter}`}
                 hx-swap="innerHTML transition:true"
-                class={'text-blue-800 dark:text-blue-500 hover:underline'}
+                class="text-blue-800 dark:text-blue-500 hover:underline"
               >
                 {filter}
               </a>
@@ -81,8 +81,8 @@ export function Todos({ todos, currentFilter }: Props) {
         <p class="text-center text-slate-600 dark:text-slate-300">
           <span
             hx-trigger="htmx:beforeSwap from:#todo-list delay:20ms"
-            hx-get={`/todo-count/${currentFilter}`}
-            hx-swap="innerHTML transition:true"
+            hx-get={`/todos/${currentFilter}/count`}
+            hx-swap="innerHTML"
           >
             {todos.length}
           </span>{' '}

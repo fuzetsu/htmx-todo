@@ -8,7 +8,9 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@elysiajs/cookie": "^0.8.0",
     "@elysiajs/html": "^0.8.0",
+    "@elysiajs/jwt": "^0.8.0",
     "@gtramontina.com/elysia-tailwind": "2.0.0",
     "drizzle-orm": "^0.29.3",
     "elysia": "latest",
