@@ -5,3 +5,8 @@
 body {
   @apply bg-white text-black dark:bg-black dark:text-white;
 }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
