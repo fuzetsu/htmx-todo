@@ -5,7 +5,6 @@ import { tailwind } from '@gtramontina.com/elysia-tailwind'
 import { CSS_PUBLIC_PATH, HTMX_PUBLIC_PATH } from './constants'
 import { authRoutes } from './routes/auth'
 import { todosPrefix, todosRoutes } from './routes/todos'
-import { redirect } from './routes/util'
 
 const app = new Elysia()
   .use(html())
@@ -14,12 +13,12 @@ const app = new Elysia()
       path: CSS_PUBLIC_PATH,
       source: './src/styles.css',
       config: './tailwind.config.js',
-    })
+    }),
   )
   .get(HTMX_PUBLIC_PATH, () => Bun.file('./node_modules/htmx.org/dist/htmx.min.js'))
   .use(authRoutes)
   .use(todosRoutes)
-  .get('/', redirect(todosPrefix))
+  .get('/', ({ setRedirect }) => setRedirect(todosPrefix))
   .listen(3000)
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)

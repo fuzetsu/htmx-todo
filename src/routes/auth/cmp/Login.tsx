@@ -1,6 +1,6 @@
-import { Button } from './cmp/Button'
-import { Input } from './cmp/Input'
-import { Root } from './cmp/Root'
+import { Button } from '../../../base/Button'
+import { Input } from '../../../base/Input'
+import { Root } from '../../../base/Root'
 
 interface Props {
   register?: boolean

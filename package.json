@@ -26,7 +26,8 @@
     "printWidth": 100,
     "useTabs": false,
     "tabWidth": 2,
-    "semi": false
+    "semi": false,
+    "trailingComma": "all"
   },
   "module": "src/index.js"
 }

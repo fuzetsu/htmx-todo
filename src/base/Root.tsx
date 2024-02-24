@@ -1,4 +1,4 @@
-import { CSS_PUBLIC_PATH, HTMX_PUBLIC_PATH } from '../../constants'
+import { CSS_PUBLIC_PATH, HTMX_PUBLIC_PATH } from '../constants'
 
 export function Root({ children }: { children: JSX.Element }) {
   return (

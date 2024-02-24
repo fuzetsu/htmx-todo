@@ -1,44 +1,12 @@
-import { Root } from './cmp/Root'
-import { Input } from './cmp/Input'
-import { Todo } from '../db/schema'
+import { Todo } from '../../../db/schema'
+import { Input } from '../../../base/Input'
+import { Root } from '../../../base/Root'
 import { Filter, filters } from '../types'
+import { TodoItem } from './TodoItem'
 
 interface Props {
   todos: Todo[]
   currentFilter: Filter
-}
-
-export function Todo({ todo }: { todo: Todo }) {
-  const htmlId = `todo-${todo.id}`
-  const idSel = `#${htmlId}`
-  return (
-    <div
-      id={htmlId}
-      class="border border-slate-400 p-3 flex justify-between gap-2 items-center rounded"
-    >
-      <div class="flex gap-2 items-center">
-        <input
-          autocomplete="off"
-          type="checkbox"
-          checked={todo.done}
-          hx-post={`/todos/${todo.id}/toggle`}
-          hx-target={idSel}
-          hx-swap="outerHTML transition:true"
-        />
-        <span safe class={todo.done ? 'line-through' : ''}>
-          {todo.text}
-        </span>
-      </div>
-      <button
-        class="hover:text-red-700 dark:hover:text-red-400"
-        hx-delete={`/todos/${todo.id}`}
-        hx-swap="outerHTML transition:true"
-        hx-target={idSel}
-      >
-        x
-      </button>
-    </div>
-  )
 }
 
 export function Todos({ todos, currentFilter }: Props) {
@@ -68,13 +36,13 @@ export function Todos({ todos, currentFilter }: Props) {
               >
                 {filter}
               </a>
-            )
+            ),
           )}
         </div>
 
         <div id="todo-list" class="flex flex-col gap-2">
           {todos.map((todo) => (
-            <Todo todo={todo} />
+            <TodoItem todo={todo} />
           ))}
         </div>
 

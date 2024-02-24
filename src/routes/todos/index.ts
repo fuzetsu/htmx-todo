@@ -1,19 +1,21 @@
-import { Elysia, t } from 'elysia'
-import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { and, count, desc, eq } from 'drizzle-orm'
 import { AnySQLiteSelect } from 'drizzle-orm/sqlite-core'
+import { Elysia, t } from 'elysia'
 
-import { db } from '../db'
-import { todos } from '../db/schema'
-import { Filter, filters } from '../types'
-import { Todo, Todos } from '../views/Todos'
-import { isAuthenticated, loginPath } from './auth'
+import { db } from '../../db'
+import { todos } from '../../db/schema'
+import { isAuthenticated, loginPath } from '../auth'
+
+import { Todos } from './cmp/Todos'
+import { TodoItem } from './cmp/TodoItem'
+import { Filter, filters } from './types'
 
 const filterTodos = <T extends AnySQLiteSelect>(userId: number, filter: Filter, query: T) => {
   return query.where(
     and(
       eq(todos.userId, userId),
-      filter === 'all' ? undefined : eq(todos.done, filter !== 'active')
-    )
+      filter === 'all' ? undefined : eq(todos.done, filter !== 'active'),
+    ),
   )
 }
 const getTodos = (userId: number, filter: Filter) =>
@@ -37,7 +39,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
       if (!user) return
       return Todos({ todos: await getTodos(user.id, filter), currentFilter: filter })
     },
-    { params: t.Object({ filter: t.Optional(tFilter) }) }
+    { params: t.Object({ filter: t.Optional(tFilter) }) },
   )
   .get(
     '/:filter/count',
@@ -46,11 +48,11 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
       const [{ todoCount }] = await filterTodos(
         user.id,
         params.filter,
-        db.select({ todoCount: count(todos.id) }).from(todos)
+        db.select({ todoCount: count(todos.id) }).from(todos),
       )
       return todoCount
     },
-    { params: tFilterParams }
+    { params: tFilterParams },
   )
   .put(
     '/',
@@ -61,9 +63,9 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
         .values({ text: body.text, done: false, userId: user!.id })
         .returning()
       if (!todo) throw new Error('failed to retrieve todo')
-      return Todo({ todo })
+      return TodoItem({ todo })
     },
-    { body: tPutTodo }
+    { body: tPutTodo },
   )
   .post('/:id/toggle', async ({ params, user }) => {
     if (!user) return
@@ -76,7 +78,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     if (!todo) throw new Error('could not find todo ' + params.id)
     todo.done = !todo.done
     await db.update(todos).set({ done: todo.done }).where(eq(todos.id, id))
-    return Todo({ todo })
+    return TodoItem({ todo })
   })
   .delete('/:id', async ({ params, user }) => {
     if (!user) return

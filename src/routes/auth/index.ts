@@ -3,9 +3,10 @@ import { jwt } from '@elysiajs/jwt'
 import cookie from '@elysiajs/cookie'
 import { eq, and, count } from 'drizzle-orm'
 
-import { Login } from '../views/Login'
-import { db } from '../db'
-import { User, users } from '../db/schema'
+import { Login } from './cmp/Login'
+import { db } from '../../db'
+import { User, users } from '../../db/schema'
+import { htmxRedirect } from '../../plugins/htmx-redirect'
 
 const tAuth = t.Object({
   username: t.String({ minLength: 4, maxLength: 50 }),
@@ -28,16 +29,6 @@ const rootPath = '/'
 
 export const authPrefix = '/auth'
 export const loginPath = '/auth/login'
-
-export const htmxRedirect = new Elysia({ name: 'htmx-redirect' }).derive(({ set, headers }) => {
-  const setRedirect = (path: string) => {
-    // use htmx redirect method if request came from htmx
-    if (headers['HX-Request'] === 'true') set.headers['HX-Redirect'] = path
-    // otherwise use standard HTTP redirect
-    else set.redirect = path
-  }
-  return { setRedirect }
-})
 
 export const isAuthenticated = ({ redirect }: { redirect?: string } = {}) =>
   new Elysia({ name: 'auth-checker', seed: redirect })
@@ -94,7 +85,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
       })
       setRedirect(rootPath)
     },
-    { body: tAuth }
+    { body: tAuth },
   )
   .get('/login', async ({ user, setRedirect }) => {
     if (user) {
@@ -125,7 +116,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
       })
       setRedirect(rootPath)
     },
-    { body: tAuth }
+    { body: tAuth },
   )
   .get('/logoff', ({ setCookie, setRedirect }) => {
     setCookie('access_token', '', { maxAge: 0, httpOnly: true })
