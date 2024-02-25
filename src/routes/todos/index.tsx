@@ -90,7 +90,9 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     return (
       <>
         <TodoItem todo={todo} />
-        <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
+        {activeFilter !== 'all' && (
+          <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
+        )}
       </>
     )
   })
