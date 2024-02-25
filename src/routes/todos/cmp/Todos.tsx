@@ -3,6 +3,7 @@ import { Input } from '../../../base/Input'
 import { Root } from '../../../base/Root'
 import { Filter, filters } from '../types'
 import { TodoItem } from './TodoItem'
+import { TodoCounter } from './TodoCounter'
 
 interface Props {
   todos: Todo[]
@@ -47,14 +48,7 @@ export function Todos({ todos, currentFilter }: Props) {
         </div>
 
         <p class="text-center text-slate-600 dark:text-slate-300">
-          <span
-            hx-trigger="htmx:beforeSwap from:#todo-list delay:20ms"
-            hx-get={`/todos/${currentFilter}/count`}
-            hx-swap="innerHTML"
-          >
-            {todos.length}
-          </span>{' '}
-          {currentFilter !== 'all' && currentFilter} todos
+          <TodoCounter count={todos.length} /> {currentFilter !== 'all' && currentFilter} todos
         </p>
       </div>
     </Root>

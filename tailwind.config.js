@@ -1,3 +1,3 @@
 export default {
-  content: ['./src/views/**/*.tsx'],
+  content: ['./src/**/*.tsx'],
 }
