@@ -14,7 +14,7 @@ export function TodoItem({ todo, editable = false }: Props) {
   const hxSwap = { 'hx-target': idSel, 'hx-swap': 'outerHTML transition:true' }
 
   const textMarkup = editable ? (
-    <Input required minlength={1} name="text" class="w-full" value={todo.text} />
+    <Input autofocus="true" required minlength={1} name="text" class="w-full" value={todo.text} />
   ) : (
     <span safe class={todo.done ? 'line-through' : ''}>
       {todo.text}
