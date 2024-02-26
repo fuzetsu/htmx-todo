@@ -39,6 +39,12 @@ const getTodo = async (userId: number, todoId: number) => {
   return todo
 }
 
+const parseId = (id: string) => {
+  const numId = Number(id)
+  if (isNaN(numId)) throw new Error('passed non numeric ID: ' + id)
+  return numId
+}
+
 export const todosPrefix = '/todos'
 
 const tIdParams = { params: t.Object({ id: t.String() }) }
@@ -61,8 +67,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     '/edit/:id',
     async ({ user, params }) => {
       if (!user) return
-      const id = Number(params.id)
-      if (isNaN(id)) throw new Error('invalid id: ' + params.id)
+      const id = parseId(params.id)
       return <TodoItem todo={await getTodo(user.id, id)} editable />
     },
     tIdParams,
@@ -97,8 +102,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     '/:id',
     async ({ params, body, user, activeFilter }) => {
       if (!user) return
-      const id = Number(params.id)
-      if (isNaN(id)) throw new Error('invalid id: ' + params.id)
+      const id = parseId(params.id)
 
       const extra = body.text ? { text: body.text } : null
       const [todo] = await db
@@ -128,10 +132,8 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .delete('/:id', async ({ params, user, activeFilter }) => {
     if (!user) return
 
-    const numId = Number(params.id)
-    if (isNaN(numId)) throw new Error('invalid todo id: ' + params.id)
-
-    await db.delete(todos).where(and(eq(todos.id, numId), eq(todos.userId, user.id)))
+    const id = parseId(params.id)
+    await db.delete(todos).where(and(eq(todos.id, id), eq(todos.userId, user.id)))
 
     return <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
   })
