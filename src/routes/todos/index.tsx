@@ -80,7 +80,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
 
       const [todo] = await db
         .insert(todos)
-        .values({ text: body.text, done: false, userId: user!.id })
+        .values({ text: body.text, done: false, userId: user.id })
         .returning()
       if (!todo) throw new Error('failed to retrieve todo')
 
@@ -100,15 +100,13 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
       const id = Number(params.id)
       if (isNaN(id)) throw new Error('invalid id: ' + params.id)
 
+      const extra = body.text ? { text: body.text } : null
       const [todo] = await db
-        .select()
-        .from(todos)
-        .where(and(eq(todos.id, id), eq(todos.userId, user.id)))
-      if (!todo) throw new Error('could not find todo ' + id)
-
-      todo.done = body.done === 'on'
-      if (body.text) todo.text = body.text
-      await db.update(todos).set(todo).where(eq(todos.id, id))
+        .update(todos)
+        .set({ ...extra, done: body.done === 'on' })
+        .where(and(eq(todos.userId, user.id), eq(todos.id, id)))
+        .returning()
+      if (!todo) throw new Error('unable to update todo ' + id)
 
       return (
         <>
