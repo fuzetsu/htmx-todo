@@ -17,10 +17,10 @@ export function Todos({ username, todos, currentFilter }: Props) {
       <div class="m-2 max-w-[500px] mx-auto flex flex-col gap-2">
         <div class="flex items-baseline justify-between">
           <h1 class="text-3xl">Todo list</h1>
-          <span class="flex items-center gap-1">
+          <a hx-boost="true" href="/auth/logoff" title="Logoff" class="flex items-center gap-1">
             {username}
             <span class="inline-block w-3 h-3 bg-black dark:bg-white rounded-full"></span>
-          </span>
+          </a>
         </div>
         <form
           hx-post="/todos"

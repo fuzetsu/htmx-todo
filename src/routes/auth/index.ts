@@ -66,11 +66,10 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
         .from(users)
         .where(eq(users.username, body.username))
       if (userCount > 0) {
-        // replace with html
-        return 'username already in use'
+        return 'Sorry, that username is already taken. Try another one.'
       }
 
-      if (body.password !== body.confirmPassword) return "passwords don't match"
+      if (body.password !== body.confirmPassword) return "The passwords don't match."
 
       const hashedPassword = await Bun.password.hash(body.password)
       const [user] = await db
@@ -104,10 +103,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
         .where(and(eq(users.username, body.username)))
 
       const isVerified = await Bun.password.verify(body.password, user?.password ?? '')
-      if (!isVerified) {
-        // replace with html
-        return 'wrong username and/or password'
-      }
+      if (!isVerified) return "Sorry. That username/password combination didn't work."
 
       const accessToken = await jwt.sign({ id: user.id })
       setCookie('access_token', accessToken, {

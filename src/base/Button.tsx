@@ -10,7 +10,7 @@ export function Button({ children, href, ...props }: Props) {
   const Tag = href ? 'a' : 'button'
 
   return (
-    <Tag {...props} href={href} class={style + props.class}>
+    <Tag {...props} href={href} class={style + (props.class ?? '')}>
       {children}
     </Tag>
   )
