@@ -6,16 +6,22 @@ import { TodoItem } from './TodoItem'
 import { TodoCounter } from './TodoCounter'
 
 interface Props {
+  username: string
   todos: Todo[]
   currentFilter: Filter
 }
 
-export function Todos({ todos, currentFilter }: Props) {
+export function Todos({ username, todos, currentFilter }: Props) {
   return (
     <Root>
       <div class="m-2 max-w-[500px] mx-auto flex flex-col gap-2">
-        <h1 class="text-3xl">Todo app</h1>
-
+        <div class="flex items-baseline justify-between">
+          <h1 class="text-3xl">Todo app</h1>
+          <span class="flex items-center gap-1">
+            {username}
+            <span class="inline-block w-3 h-3 bg-black dark:bg-white rounded-full"></span>
+          </span>
+        </div>
         <form
           hx-post="/todos"
           hx-swap="afterbegin transition:true"

@@ -53,13 +53,21 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .use(isAuthenticated({ redirect: loginPath }))
   .get('/', async ({ user }) => {
     if (!user) return
-    return <Todos todos={await getTodos(user.id, 'all')} currentFilter="all" />
+    return (
+      <Todos username={user.username} todos={await getTodos(user.id, 'all')} currentFilter="all" />
+    )
   })
   .get(
     '/:filter',
     async ({ user, params: { filter = 'all' } }) => {
       if (!user) return
-      return <Todos todos={await getTodos(user.id, filter)} currentFilter={filter} />
+      return (
+        <Todos
+          username={user.username}
+          todos={await getTodos(user.id, filter)}
+          currentFilter={filter}
+        />
+      )
     },
     { params: t.Object({ filter: t.Optional(t.Union(filters.map((x) => t.Literal(x)))) }) },
   )
