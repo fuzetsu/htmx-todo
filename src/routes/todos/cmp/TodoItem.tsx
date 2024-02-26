@@ -30,7 +30,7 @@ export function TodoItem({ todo, editable = false }: Props) {
   )
 
   return (
-    <li id={htmlId} class="border border-slate-400 p-3 rounded">
+    <li id={htmlId} class="border border-slate-400 p-2 rounded">
       <form
         {...hxSwap}
         hx-put={`/todos/${todo.id}`}
