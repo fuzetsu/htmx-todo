@@ -1,34 +1,57 @@
+import { Button } from '../../../base/Button'
+import { Input } from '../../../base/Input'
 import type { Todo } from '../../../db/schema'
 
-export function TodoItem({ todo }: { todo: Todo }) {
+interface Props {
+  todo: Todo
+  editable?: boolean
+}
+
+export function TodoItem({ todo, editable = false }: Props) {
   const htmlId = `todo-${todo.id}`
   const idSel = `#${htmlId}`
+
+  const hxSwap = { 'hx-target': idSel, 'hx-swap': 'outerHTML transition:true' }
+
+  const textMarkup = editable ? (
+    <Input required minlength={1} name="text" value={todo.text} />
+  ) : (
+    <span safe class={todo.done ? 'line-through' : ''}>
+      {todo.text}
+    </span>
+  )
+
+  const editAction = editable ? (
+    <Button type="submit">Save</Button>
+  ) : (
+    <Button {...hxSwap} type="button" hx-get={`/todos/edit/${todo.id}`}>
+      Edit
+    </Button>
+  )
+
   return (
-    <div
-      id={htmlId}
-      class="border border-slate-400 p-3 flex justify-between gap-2 items-center rounded"
-    >
-      <div class="flex gap-2 items-center">
-        <input
-          autocomplete="off"
-          type="checkbox"
-          checked={todo.done}
-          hx-post={`/todos/${todo.id}/toggle`}
-          hx-target={idSel}
-          hx-swap="outerHTML transition:true"
-        />
-        <span safe class={todo.done ? 'line-through' : ''}>
-          {todo.text}
-        </span>
-      </div>
-      <button
-        class="hover:text-red-700 dark:hover:text-red-400"
-        hx-delete={`/todos/${todo.id}`}
-        hx-swap="outerHTML transition:true"
-        hx-target={idSel}
+    <li id={htmlId} class="border border-slate-400 p-3 rounded">
+      <form
+        {...hxSwap}
+        hx-put={`/todos/${todo.id}`}
+        hx-trigger="submit, change from:find input[type=checkbox]"
+        class="flex justify-between gap-2 items-center"
       >
-        x
-      </button>
-    </div>
+        <div class="flex gap-2 items-center">
+          <input name="done" autocomplete="off" type="checkbox" checked={todo.done} />
+          {textMarkup}
+        </div>
+        <div class="flex gap-2 items-center">
+          {editAction}
+          <Button
+            {...hxSwap}
+            hx-delete={`/todos/${todo.id}`}
+            class="hover:text-red-700 dark:hover:text-red-400"
+          >
+            x
+          </Button>
+        </div>
+      </form>
+    </li>
   )
 }

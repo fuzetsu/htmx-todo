@@ -31,7 +31,17 @@ const getTodoCount = async (userId: number, filter: Filter) => {
   return todoCount
 }
 
+const getTodo = async (userId: number, todoId: number) => {
+  const [todo] = await db
+    .select()
+    .from(todos)
+    .where(and(eq(todos.id, todoId), eq(todos.userId, userId)))
+  return todo
+}
+
 export const todosPrefix = '/todos'
+
+const tIdParams = { params: t.Object({ id: t.String() }) }
 
 export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .use(isAuthenticated({ redirect: loginPath }))
@@ -47,13 +57,23 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     },
     { params: t.Object({ filter: t.Optional(t.Union(filters.map((x) => t.Literal(x)))) }) },
   )
+  .get(
+    '/edit/:id',
+    async ({ user, params }) => {
+      if (!user) return
+      const id = Number(params.id)
+      if (isNaN(id)) throw new Error('invalid id: ' + params.id)
+      return <TodoItem todo={await getTodo(user.id, id)} editable />
+    },
+    tIdParams,
+  )
   .derive(({ headers }) => {
     const maybeFilter = headers['referer']?.split('/').pop()
     const activeFilter: Filter =
       maybeFilter && filters.includes(maybeFilter as Filter) ? (maybeFilter as Filter) : 'all'
     return { activeFilter }
   })
-  .put(
+  .post(
     '/',
     async ({ body, user, activeFilter }) => {
       if (!user) return
@@ -73,29 +93,40 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     },
     { body: t.Object({ text: t.String({ minLength: 1 }) }) },
   )
-  .post('/:id/toggle', async ({ params, user, activeFilter }) => {
-    if (!user) return
-    const id = Number(params.id)
-    if (isNaN(id)) throw new Error('invalid id: ' + params.id)
+  .put(
+    '/:id',
+    async ({ params, body, user, activeFilter }) => {
+      if (!user) return
+      const id = Number(params.id)
+      if (isNaN(id)) throw new Error('invalid id: ' + params.id)
 
-    const [todo] = await db
-      .select()
-      .from(todos)
-      .where(and(eq(todos.id, id), eq(todos.userId, user.id)))
-    if (!todo) throw new Error('could not find todo ' + params.id)
+      const [todo] = await db
+        .select()
+        .from(todos)
+        .where(and(eq(todos.id, id), eq(todos.userId, user.id)))
+      if (!todo) throw new Error('could not find todo ' + id)
 
-    todo.done = !todo.done
-    await db.update(todos).set({ done: todo.done }).where(eq(todos.id, id))
+      todo.done = body.done === 'on'
+      if (body.text) todo.text = body.text
+      await db.update(todos).set(todo).where(eq(todos.id, id))
 
-    return (
-      <>
-        <TodoItem todo={todo} />
-        {activeFilter !== 'all' && (
-          <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
-        )}
-      </>
-    )
-  })
+      return (
+        <>
+          <TodoItem todo={todo} />
+          {activeFilter !== 'all' && (
+            <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
+          )}
+        </>
+      )
+    },
+    {
+      ...tIdParams,
+      body: t.Object({
+        done: t.Optional(t.Literal('on')),
+        text: t.Optional(t.String({ minLength: 1 })),
+      }),
+    },
+  )
   .delete('/:id', async ({ params, user, activeFilter }) => {
     if (!user) return
 

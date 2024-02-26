@@ -17,7 +17,7 @@ export function Todos({ todos, currentFilter }: Props) {
         <h1 class="text-3xl">Todo app</h1>
 
         <form
-          hx-put="/todos"
+          hx-post="/todos"
           hx-swap="afterbegin transition:true"
           hx-target="#todo-list"
           hx-on--after-request="event.detail.successful && this.reset()"
@@ -41,11 +41,11 @@ export function Todos({ todos, currentFilter }: Props) {
           )}
         </div>
 
-        <div id="todo-list" class="flex flex-col gap-2">
+        <ul id="todo-list" class="flex flex-col gap-2">
           {todos.map((todo) => (
             <TodoItem todo={todo} />
           ))}
-        </div>
+        </ul>
 
         <p class="text-center text-slate-600 dark:text-slate-300">
           <TodoCounter count={todos.length} /> {currentFilter !== 'all' && currentFilter} todos
