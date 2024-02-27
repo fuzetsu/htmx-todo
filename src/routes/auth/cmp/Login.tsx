@@ -13,7 +13,7 @@ export function Login({ register }: Props) {
   return (
     <Root>
       <div class="flex justify-center items-center min-h-screen">
-        <div class={`${formFlex} bg-slate-100 dark:bg-slate-900 rounded-lg p-5`}>
+        <div class={`${formFlex} border border-slate-400 rounded-lg p-5 w-80`}>
           <form
             hx-post={`/auth/${register ? 'register' : 'login'}`}
             hx-target="find div"
