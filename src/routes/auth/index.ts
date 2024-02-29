@@ -38,8 +38,9 @@ export const isAuthenticated = ({ redirect }: { redirect?: string } = {}) =>
   new Elysia({ name: 'auth-checker', seed: redirect })
     .use(jwtPlugin)
     .use(htmxRedirect)
-    .derive(async ({ cookie, jwt, setRedirect }) => {
-      const accessToken = await jwt.verify(cookie.access_token.value)
+    .guard({ cookie: t.Cookie({ webToken: t.String() }) })
+    .derive(async ({ cookie: { webToken }, jwt, setRedirect }) => {
+      const accessToken = await jwt.verify(webToken.value)
       const end = (user: User | null) => {
         if (user == null && redirect) {
           setRedirect(redirect)
@@ -63,7 +64,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
   })
   .post(
     '/register',
-    async ({ cookie, body, jwt, setRedirect }) => {
+    async ({ cookie: { webToken }, body, jwt, setRedirect }) => {
       const [{ userCount }] = await db
         .select({ userCount: count(users.id) })
         .from(users)
@@ -81,7 +82,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
         .returning({ id: users.id })
 
       const accessToken = await jwt.sign({ id: user.id })
-      cookie.access_token.set({
+      webToken.set({
         ...cookieSettings,
         value: accessToken,
       })
@@ -99,7 +100,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
   })
   .post(
     '/login',
-    async ({ cookie, body, jwt, setRedirect }) => {
+    async ({ cookie: { webToken }, body, jwt, setRedirect }) => {
       const [user] = await db
         .select()
         .from(users)
@@ -109,7 +110,7 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
       if (!isVerified) return "Sorry. That username/password combination didn't work."
 
       const accessToken = await jwt.sign({ id: user.id })
-      cookie.access_token.set({
+      webToken.set({
         ...cookieSettings,
         value: accessToken,
       })
