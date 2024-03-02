@@ -38,7 +38,7 @@ export const isAuthenticated = ({ redirect }: { redirect?: string } = {}) =>
   new Elysia({ name: 'auth-checker', seed: redirect })
     .use(jwtPlugin)
     .use(htmxRedirect)
-    .guard({ cookie: t.Cookie({ webToken: t.String() }) })
+    .guard({ cookie: t.Cookie({ webToken: t.Optional(t.String()) }) })
     .derive(async ({ cookie: { webToken }, jwt, setRedirect }) => {
       const accessToken = await jwt.verify(webToken.value)
       const end = (user: User | null) => {
