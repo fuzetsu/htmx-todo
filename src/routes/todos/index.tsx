@@ -3,7 +3,7 @@ import { AnySQLiteSelect } from 'drizzle-orm/sqlite-core'
 import { Elysia, t } from 'elysia'
 
 import { db } from '../../db'
-import { todos } from '../../db/schema'
+import { User, todos } from '../../db/schema'
 import { isAuthenticated, loginPath } from '../auth'
 
 import { Todos } from './cmp/Todos'
@@ -45,32 +45,27 @@ const parseId = (id: string) => {
   return numId
 }
 
+const renderTodos = async (user: User | null, filter: Filter) => {
+  if (!user) return
+  return (
+    <Todos
+      username={user.username}
+      todos={await getTodos(user.id, filter)}
+      currentFilter={filter}
+    />
+  )
+}
+
 export const todosPrefix = '/todos'
 
 const tIdParams = { params: t.Object({ id: t.String() }) }
+const tFilterParams = { params: t.Object({ filter: t.Union(filters.map((x) => t.Literal(x))) }) }
 
 export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .use(isAuthenticated({ redirect: loginPath }))
-  .get('/', async ({ user }) => {
-    if (!user) return
-    return (
-      <Todos username={user.username} todos={await getTodos(user.id, 'all')} currentFilter="all" />
-    )
-  })
-  .get(
-    '/:filter',
-    async ({ user, params: { filter = 'all' } }) => {
-      if (!user) return
-      return (
-        <Todos
-          username={user.username}
-          todos={await getTodos(user.id, filter)}
-          currentFilter={filter}
-        />
-      )
-    },
-    { params: t.Object({ filter: t.Optional(t.Union(filters.map((x) => t.Literal(x)))) }) },
-  )
+  // .guard({ user: User })
+  .get('/', ({ user }) => renderTodos(user, 'all'))
+  .get('/:filter', ({ user, params }) => renderTodos(user, params.filter), tFilterParams)
   .get(
     '/edit/:id',
     async ({ user, params }) => {
@@ -80,15 +75,20 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
     },
     tIdParams,
   )
-  .derive(({ headers }) => {
-    const maybeFilter = headers['referer']?.split('/').pop()
-    const activeFilter: Filter =
-      maybeFilter && filters.includes(maybeFilter as Filter) ? (maybeFilter as Filter) : 'all'
-    return { activeFilter }
+  .derive(({ headers, user }) => {
+    const renderCounter = async (skipAll?: boolean) => {
+      if (!user) return
+      const maybeFilter = headers['referer']?.split('/').pop()
+      const activeFilter: Filter =
+        maybeFilter && filters.includes(maybeFilter as Filter) ? (maybeFilter as Filter) : 'all'
+      if (skipAll && activeFilter === 'all') return
+      return <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
+    }
+    return { renderCounter }
   })
   .post(
     '/',
-    async ({ body, user, activeFilter }) => {
+    async ({ body, user, renderCounter }) => {
       if (!user) return
 
       const [todo] = await db
@@ -100,7 +100,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
       return (
         <>
           <TodoItem todo={todo} />
-          <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
+          {renderCounter()}
         </>
       )
     },
@@ -108,7 +108,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   )
   .put(
     '/:id',
-    async ({ params, body, user, activeFilter }) => {
+    async ({ params, body, user, renderCounter }) => {
       if (!user) return
       const id = parseId(params.id)
 
@@ -123,9 +123,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
       return (
         <>
           <TodoItem todo={todo} />
-          {activeFilter !== 'all' && (
-            <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
-          )}
+          {renderCounter(true)}
         </>
       )
     },
@@ -137,11 +135,11 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
       }),
     },
   )
-  .delete('/:id', async ({ params, user, activeFilter }) => {
+  .delete('/:id', async ({ params, user, renderCounter }) => {
     if (!user) return
 
     const id = parseId(params.id)
     await db.delete(todos).where(and(eq(todos.id, id), eq(todos.userId, user.id)))
 
-    return <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
+    return renderCounter()
   })
