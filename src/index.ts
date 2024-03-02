@@ -15,7 +15,7 @@ const app = new Elysia()
       config: './tailwind.config.js',
     }),
   )
-  .get(HTMX_PUBLIC_PATH, () => Bun.file('./node_modules/htmx.org/dist/htmx.min.js'))
+  .get(HTMX_PUBLIC_PATH, Bun.file('./node_modules/htmx.org/dist/htmx.min.js'))
   .use(authRoutes)
   .use(todosRoutes)
   .get('/', ({ setRedirect }) => setRedirect(todosPrefix))
