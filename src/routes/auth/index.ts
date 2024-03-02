@@ -119,6 +119,6 @@ export const authRoutes = new Elysia({ name: 'auth', prefix: authPrefix })
     { body: tAuth },
   )
   .get('/logoff', ({ cookie, setRedirect }) => {
-    cookie.access_token.remove({ path: '/' })
+    cookie.webToken.remove({ path: '/' })
     setRedirect(loginPath)
   })
