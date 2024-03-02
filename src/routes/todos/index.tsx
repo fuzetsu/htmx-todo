@@ -63,7 +63,6 @@ const tFilterParams = { params: t.Object({ filter: t.Union(filters.map((x) => t.
 
 export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .use(isAuthenticated({ redirect: loginPath }))
-  // .guard({ user: User })
   .get('/', ({ user }) => renderTodos(user, 'all'))
   .get('/:filter', ({ user, params }) => renderTodos(user, params.filter), tFilterParams)
   .get(

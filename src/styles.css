@@ -3,10 +3,14 @@
 @tailwind utilities;
 
 body {
-  @apply bg-white text-black dark:bg-black dark:text-white;
+  @apply bg-slate-50 text-black dark:bg-black dark:text-white mx-2;
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 180ms;
+}
+
+.bg-secondary {
+  @apply bg-white dark:bg-black;
 }

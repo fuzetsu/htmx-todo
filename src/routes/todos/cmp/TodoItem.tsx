@@ -16,7 +16,7 @@ export function TodoItem({ todo, editable = false }: Props) {
   const textMarkup = editable ? (
     <Input autofocus="true" required minlength={1} name="text" class="w-full" value={todo.text} />
   ) : (
-    <span safe class={todo.done ? 'line-through' : ''}>
+    <span safe class={['pl-2', todo.done && 'line-through']}>
       {todo.text}
     </span>
   )
@@ -30,7 +30,7 @@ export function TodoItem({ todo, editable = false }: Props) {
   )
 
   return (
-    <li id={htmlId} class="border border-slate-400 p-2 rounded">
+    <li id={htmlId} class="py-3">
       <form
         {...hxSwap}
         hx-put={`/todos/${todo.id}`}
