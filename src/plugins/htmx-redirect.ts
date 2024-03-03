@@ -7,5 +7,9 @@ export const htmxRedirect = new Elysia({ name: 'htmx-redirect' }).derive(({ set,
     // otherwise use standard HTTP redirect
     else set.redirect = path
   }
-  return { setRedirect }
+
+  const pushUrl = (url: string) => {
+    set.headers['HX-Push-Url'] = url
+  }
+  return { setRedirect, pushUrl }
 })

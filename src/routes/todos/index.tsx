@@ -45,13 +45,14 @@ const parseId = (id: string) => {
   return numId
 }
 
-const renderTodos = async (user: User | null, filter: Filter) => {
+const renderTodos = async (user: User | null, filter: Filter, editing?: string) => {
   if (!user) return
   return (
     <Todos
       username={user.username}
       todos={await getTodos(user.id, filter)}
       currentFilter={filter}
+      editing={editing}
     />
   )
 }
@@ -60,16 +61,21 @@ export const todosPrefix = '/todos'
 
 const tIdParams = { params: t.Object({ id: t.String() }) }
 const tFilterParams = { params: t.Object({ filter: t.Union(filters.map((x) => t.Literal(x))) }) }
+const tEditQuery = { query: t.Object({ edit: t.Optional(t.String()) }) }
 
 export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .use(isAuthenticated({ redirect: loginPath }))
-  .get('/', ({ user }) => renderTodos(user, 'all'))
-  .get('/:filter', ({ user, params }) => renderTodos(user, params.filter), tFilterParams)
+  .get('/', ({ user, query }) => renderTodos(user, 'all', query.edit), tEditQuery)
+  .get('/:filter', ({ user, params, query }) => renderTodos(user, params.filter, query.edit), {
+    ...tFilterParams,
+    ...tEditQuery,
+  })
   .get(
     '/edit/:id',
-    async ({ user, params }) => {
+    async ({ user, params, pushUrl }) => {
       if (!user) return
       const id = parseId(params.id)
+      pushUrl('?edit=' + id)
       return <TodoItem todo={await getTodo(user.id, id)} editable />
     },
     tIdParams,
@@ -107,7 +113,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   )
   .put(
     '/:id',
-    async ({ params, body, user, renderCounter }) => {
+    async ({ params, body, user, headers, renderCounter, pushUrl }) => {
       if (!user) return
       const id = parseId(params.id)
 
@@ -118,6 +124,8 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
         .where(and(eq(todos.userId, user.id), eq(todos.id, id)))
         .returning()
       if (!todo) throw new Error('unable to update todo ' + id)
+
+      if (headers['referer']) pushUrl(headers['referer'].split('?')[0])
 
       return (
         <>

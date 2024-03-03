@@ -9,9 +9,11 @@ interface Props {
   username: string
   todos: Todo[]
   currentFilter: Filter
+  editing?: string
 }
 
-export function Todos({ username, todos, currentFilter }: Props) {
+export function Todos({ username, todos, currentFilter, editing }: Props) {
+  const editId = Number(editing)
   return (
     <Root>
       <div class="m-4 max-w-[500px] mx-auto flex flex-col gap-2">
@@ -51,7 +53,7 @@ export function Todos({ username, todos, currentFilter }: Props) {
 
           <ul id="todo-list" class="flex flex-col divide-y divide-slate-400">
             {todos.map((todo) => (
-              <TodoItem todo={todo} />
+              <TodoItem todo={todo} editable={editId === todo.id} />
             ))}
           </ul>
         </div>
