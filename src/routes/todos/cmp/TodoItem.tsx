@@ -11,7 +11,7 @@ export function TodoItem({ todo, editable = false }: Props) {
   const htmlId = `todo-${todo.id}`
   const idSel = `#${htmlId}`
 
-  const hxSwap = { 'hx-target': idSel, 'hx-swap': 'outerHTML transition:true' }
+  const hxSwap = { 'hx-target': idSel, 'hx-swap': 'outerHTML' }
 
   const textMarkup = editable ? (
     <Input autofocus="true" required minlength={1} name="text" class="w-full" value={todo.text} />

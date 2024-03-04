@@ -18,7 +18,7 @@ export function Todos({ username, todos, currentFilter, editing }: Props) {
     <Root>
       <div class="m-4 max-w-[500px] mx-auto flex flex-col gap-2">
         <div class="flex items-baseline justify-between">
-          <h1 class="text-3xl">Todo list</h1>
+          <h1 class="text-3xl">Todos</h1>
           <div class="flex flex-row gap-2 justify-center" hx-boost="true">
             {filters.map((filter) =>
               filter === currentFilter ? (
@@ -26,7 +26,7 @@ export function Todos({ username, todos, currentFilter, editing }: Props) {
               ) : (
                 <a
                   href={`/todos/${filter}`}
-                  hx-swap="innerHTML transition:true"
+                  hx-swap="innerHTML"
                   class="text-blue-800 dark:text-blue-500 hover:underline"
                 >
                   {filter}
@@ -44,7 +44,7 @@ export function Todos({ username, todos, currentFilter, editing }: Props) {
         <div class="p-3 pb-0 rounded flex flex-col bg-secondary border border-slate-400">
           <form
             hx-post="/todos"
-            hx-swap="afterbegin transition:true"
+            hx-swap="afterbegin"
             hx-target="#todo-list"
             hx-on--after-request="event.detail.successful && this.reset()"
           >
