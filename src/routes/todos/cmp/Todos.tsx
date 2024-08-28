@@ -51,7 +51,7 @@ export function Todos({ username, todos, currentFilter, editing }: Props) {
             <Input id="newTodo" name="text" class="w-full" placeholder="e.g. Wash dishes" />
           </form>
 
-          <ul id="todo-list" class="flex flex-col divide-y divide-slate-400">
+          <ul id="todo-list" class="flex flex-col divide-y divide-slate-400 empty:pb-3">
             {todos.map((todo) => (
               <TodoItem todo={todo} editable={editId === todo.id} />
             ))}
