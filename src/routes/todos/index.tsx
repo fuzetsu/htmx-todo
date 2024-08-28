@@ -57,6 +57,13 @@ const renderTodos = async (user: User | null, filter: Filter, editing?: string) 
   )
 }
 
+const getActiveFilter = (headers: Record<string, string | undefined>): Filter => {
+  const maybeFilter = headers['referer']?.split('/').pop()
+  const activeFilter: Filter =
+    maybeFilter && filters.includes(maybeFilter as Filter) ? (maybeFilter as Filter) : 'all'
+  return activeFilter
+}
+
 export const todosPrefix = '/todos'
 
 const tIdParams = { params: t.Object({ id: t.String() }) }
@@ -83,9 +90,7 @@ export const todosRoutes = new Elysia({ name: 'todos', prefix: todosPrefix })
   .derive(({ headers, user }) => {
     const renderCounter = async (skipAll?: boolean) => {
       if (!user) return
-      const maybeFilter = headers['referer']?.split('/').pop()
-      const activeFilter: Filter =
-        maybeFilter && filters.includes(maybeFilter as Filter) ? (maybeFilter as Filter) : 'all'
+      const activeFilter = getActiveFilter(headers)
       if (skipAll && activeFilter === 'all') return
       return <TodoCounter oob count={await getTodoCount(user.id, activeFilter)} />
     }
